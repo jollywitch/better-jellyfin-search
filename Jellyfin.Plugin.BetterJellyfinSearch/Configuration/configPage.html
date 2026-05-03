@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Better Jellyfin Search</title>
+</head>
+<body>
+    <div id="BetterJellyfinSearchConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="BetterJellyfinSearchConfigForm">
+                    <div class="verticalSection">
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="BetterJellyfinSearchPageSize">Items per section page</label>
+                            <input is="emby-input" id="BetterJellyfinSearchPageSize" name="BetterJellyfinSearchPageSize" type="number" min="1" max="100" step="1" />
+                            <div class="fieldDescription">Default is 100. Jellyfin API requests are capped at 100 per section page.</div>
+                        </div>
+
+                        <div class="selectContainer">
+                            <label class="selectLabel" for="BetterJellyfinSearchSectionMode">Section mode</label>
+                            <select is="emby-select" id="BetterJellyfinSearchSectionMode" name="BetterJellyfinSearchSectionMode">
+                                <option value="type-sections">Type sections</option>
+                            </select>
+                        </div>
+
+                        <h3>Included item types</h3>
+                        <div class="checkboxList" id="BetterJellyfinSearchItemTypes">
+                            <label><input is="emby-checkbox" type="checkbox" value="Movie" /> <span>Movies</span></label>
+                            <label><input is="emby-checkbox" type="checkbox" value="Series" /> <span>Shows</span></label>
+                            <label><input is="emby-checkbox" type="checkbox" value="Episode" /> <span>Episodes</span></label>
+                            <label><input is="emby-checkbox" type="checkbox" value="MusicAlbum" /> <span>Albums</span></label>
+                            <label><input is="emby-checkbox" type="checkbox" value="Audio" /> <span>Songs</span></label>
+                            <label><input is="emby-checkbox" type="checkbox" value="BoxSet" /> <span>Collections</span></label>
+                            <label><input is="emby-checkbox" type="checkbox" value="Playlist" /> <span>Playlists</span></label>
+                            <label><input is="emby-checkbox" type="checkbox" value="Video" /> <span>Videos</span></label>
+                            <label><input is="emby-checkbox" type="checkbox" value="Photo" /> <span>Photos</span></label>
+                            <label><input is="emby-checkbox" type="checkbox" value="Folder" /> <span>Folders</span></label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            (function () {
+                var pluginId = "35150473-684b-4dd1-81a3-c3d9001a644f";
+
+                function getSelectedItemTypes(page) {
+                    return Array.prototype.slice.call(page.querySelectorAll("#BetterJellyfinSearchItemTypes input:checked"))
+                        .map(function (input) {
+                            return input.value;
+                        });
+                }
+
+                function setSelectedItemTypes(page, itemTypes) {
+                    var selected = new Set(itemTypes || []);
+                    Array.prototype.slice.call(page.querySelectorAll("#BetterJellyfinSearchItemTypes input")).forEach(function (input) {
+                        input.checked = selected.has(input.value);
+                    });
+                }
+
+                document.querySelector("#BetterJellyfinSearchConfigPage")
+                    .addEventListener("pageshow", function () {
+                        var page = this;
+
+                        ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                            page.querySelector("#BetterJellyfinSearchPageSize").value = config.PageSize || 100;
+                            page.querySelector("#BetterJellyfinSearchSectionMode").value = config.SectionMode || "type-sections";
+                            setSelectedItemTypes(page, config.IncludeItemTypes);
+                        });
+                    });
+
+                document.querySelector("#BetterJellyfinSearchConfigForm")
+                    .addEventListener("submit", function (event) {
+                        event.preventDefault();
+
+                        var form = this;
+                        var page = form.closest("#BetterJellyfinSearchConfigPage");
+
+                        ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                            config.PageSize = Math.max(1, Math.min(100, parseInt(page.querySelector("#BetterJellyfinSearchPageSize").value, 10) || 100));
+                            config.SectionMode = page.querySelector("#BetterJellyfinSearchSectionMode").value || "type-sections";
+                            config.IncludeItemTypes = getSelectedItemTypes(page);
+
+                            ApiClient.updatePluginConfiguration(pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                        });
+                    });
+            }());
+        </script>
+    </div>
+</body>
+</html>

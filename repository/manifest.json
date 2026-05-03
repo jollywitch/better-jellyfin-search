@@ -1,0 +1,21 @@
+[
+  {
+    "category": "General",
+    "guid": "35150473-684b-4dd1-81a3-c3d9001a644f",
+    "name": "Better Jellyfin Search",
+    "description": "Improves Jellyfin Web search results with type-aware tabs, thumbnail grids, pagination, sorting, and hover playback while keeping the normal Jellyfin URL and session.",
+    "overview": "Better search results for Jellyfin Web",
+    "owner": "jollywitch",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "Initial public release.",
+        "targetAbi": "10.11.0.0",
+        "timestamp": "2026-05-04T00:00:00Z",
+        "checksum": "__PENDING__",
+        "sourceUrl": "https://github.com/jollywitch/better-jellyfin-search/releases/download/v1.0.0.0/BetterJellyfinSearch_1.0.0.0.zip"
+      }
+    ],
+    "imageUrl": "https://raw.githubusercontent.com/jollywitch/better-jellyfin-search/main/repository/images/better-jellyfin-search.png"
+  }
+]

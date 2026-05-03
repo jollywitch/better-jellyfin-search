@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Build plugin package
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          ZIP_NAME="BetterJellyfinSearch_${VERSION}.zip"
+          rm -rf Jellyfin.Plugin.BetterJellyfinSearch/bin/Release/net9.0/publish
+          dotnet publish Jellyfin.Plugin.BetterJellyfinSearch.sln -c Release
+          mkdir -p dist
+          (
+            cd Jellyfin.Plugin.BetterJellyfinSearch/bin/Release/net9.0/publish
+            zip -r "$GITHUB_WORKSPACE/dist/$ZIP_NAME" .
+          )
+          CHECKSUM="$(md5sum "dist/$ZIP_NAME" | awk '{print $1}')"
+          echo "$CHECKSUM  $ZIP_NAME" > "dist/$ZIP_NAME.md5"
+          SOURCE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${ZIP_NAME}"
+          {
+            echo "RELEASE_VERSION=$VERSION"
+            echo "RELEASE_CHECKSUM=$CHECKSUM"
+            echo "RELEASE_SOURCE_URL=$SOURCE_URL"
+          } >> "$GITHUB_ENV"
+
+      - name: Commit repository manifest checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+          python3 - "$RELEASE_VERSION" "$RELEASE_CHECKSUM" "$RELEASE_SOURCE_URL" <<'PY'
+          import json
+          import re
+          import sys
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          version, checksum, source_url = sys.argv[1:]
+          path = Path("repository/manifest.json")
+          build_path = Path("build.yaml")
+          manifest = json.loads(path.read_text())
+          build = build_path.read_text()
+
+          def read_yaml_value(name, default=""):
+              match = re.search(rf"^{re.escape(name)}:\s*[\"']?([^\"'\n]+)[\"']?\s*$", build, re.MULTILINE)
+              return match.group(1).strip() if match else default
+
+          def read_changelog():
+              lines = build.splitlines()
+              for index, line in enumerate(lines):
+                  if line.startswith("changelog:"):
+                      inline = line.split(":", 1)[1].strip()
+                      if inline and inline != ">":
+                          return inline.strip("\"'")
+                      collected = []
+                      for next_line in lines[index + 1:]:
+                          if not next_line.startswith("  "):
+                              break
+                          collected.append(next_line.strip())
+                      return " ".join(collected).strip()
+              return ""
+
+          versions = manifest[0].setdefault("versions", [])
+          matching = next((item for item in versions if item.get("version") == version), None)
+          if matching is None:
+              template = dict(versions[0]) if versions else {}
+              matching = dict(template)
+              matching["version"] = version
+              matching["changelog"] = read_changelog()
+              matching["targetAbi"] = read_yaml_value("targetAbi", matching.get("targetAbi", "10.11.0.0"))
+              matching["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+              versions.insert(0, matching)
+          entry = matching
+          entry["version"] = version
+          entry["changelog"] = read_changelog() or entry.get("changelog", "")
+          entry["targetAbi"] = read_yaml_value("targetAbi", entry.get("targetAbi", "10.11.0.0"))
+          entry["checksum"] = checksum
+          entry["sourceUrl"] = source_url
+          manifest[0]["versions"] = [entry] + [
+              item for item in versions
+              if item is not entry and item.get("version") != version
+          ]
+          path.write_text(json.dumps(manifest, indent=2) + "\n")
+          PY
+          git add repository/manifest.json
+          if git diff --cached --quiet; then
+            echo "Manifest already up to date."
+          else
+            git commit -m "chore: update release manifest for ${GITHUB_REF_NAME}"
+            git push origin main
+          fi
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/BetterJellyfinSearch_*.zip
+            dist/BetterJellyfinSearch_*.zip.md5
+          generate_release_notes: true

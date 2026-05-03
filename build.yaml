@@ -1,0 +1,17 @@
+---
+name: "Better Jellyfin Search"
+guid: "35150473-684b-4dd1-81a3-c3d9001a644f"
+version: "1.0.0.0"
+targetAbi: "10.11.0.0"
+framework: "net9.0"
+overview: "Better search results for Jellyfin Web"
+description: >
+  Improves Jellyfin Web search results with type-aware tabs, thumbnail grids,
+  pagination, sorting, and hover playback while preserving the normal Jellyfin
+  URL, session, search input, and routing.
+category: "General"
+owner: "jollywitch"
+artifacts:
+  - "Jellyfin.Plugin.BetterJellyfinSearch.dll"
+changelog: >
+  Initial public release.

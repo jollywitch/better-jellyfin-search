@@ -1,0 +1,15 @@
+bin/
+obj/
+dist/
+*.zip
+*.nupkg
+*.snupkg
+.env
+.DS_Store
+__pycache__/
+*.pyc
+
+# Local development harness and release verification helpers.
+dev/
+scripts/dev-server.py
+scripts/wait-release.sh
