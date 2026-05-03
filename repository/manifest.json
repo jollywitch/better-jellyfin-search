@@ -12,7 +12,7 @@
         "changelog": "Initial public release.",
         "targetAbi": "10.11.0.0",
         "timestamp": "2026-05-04T00:00:00Z",
-        "checksum": "__PENDING__",
+        "checksum": "cfc92f0471a040400dbdd8a8710cb56f",
         "sourceUrl": "https://github.com/jollywitch/better-jellyfin-search/releases/download/v1.0.0.0/BetterJellyfinSearch_1.0.0.0.zip"
       }
     ],
