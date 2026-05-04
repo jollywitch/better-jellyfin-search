@@ -4,6 +4,12 @@
 
 A Jellyfin Web search UI plugin with type-aware tabs, thumbnail grids, pagination, sorting, and hover playback.
 
+## Preview
+
+| Search | Settings |
+| --- | --- |
+| [![Search results preview](repository/images/search-thumb.png)](repository/images/search.png) | [![Settings preview](repository/images/settings-thumb.png)](repository/images/settings.png) |
+
 ## Requirements
 
 - Jellyfin Server 10.11 or newer.
