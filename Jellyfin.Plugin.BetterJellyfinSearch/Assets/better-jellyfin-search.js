@@ -501,6 +501,7 @@
         if (!state.root || !state.root.isConnected) {
             var nativeInput = getSearchTextInput();
             var nativeInputWasFocused = document.activeElement === nativeInput;
+            var shouldAutoFocus = nativeInputWasFocused || shouldAutoFocusSearchInput();
             state.root = document.createElement("div");
             state.root.className = ROOT_CLASS;
             if (!state.stylesheetReady) {
@@ -524,22 +525,47 @@
             content.className = "better-jellyfin-search-content";
             state.root.appendChild(content);
 
-            if (nativeInputWasFocused) {
-                var pluginInput = state.root.querySelector(".better-jellyfin-search-search-input");
-                if (pluginInput) {
-                    pluginInput.focus({
-                        preventScroll: true
-                    });
-                    if (typeof pluginInput.setSelectionRange === "function") {
-                        pluginInput.setSelectionRange(pluginInput.value.length, pluginInput.value.length);
-                    }
-                }
+            if (shouldAutoFocus) {
+                focusPluginSearchInput(state.root);
             }
         }
 
         hideOriginalResults(state.searchPage);
         hideOriginalSearchInput();
         return state.root;
+    }
+
+    function shouldAutoFocusSearchInput() {
+        var active = document.activeElement;
+        if (!active || active === document.body || active === document.documentElement) {
+            return true;
+        }
+
+        if (!state.searchPage || !state.searchPage.contains(active)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function focusPluginSearchInput(root) {
+        var pluginInput = root && root.querySelector(".better-jellyfin-search-search-input");
+        if (!pluginInput) {
+            return;
+        }
+
+        window.setTimeout(function () {
+            if (!pluginInput.isConnected) {
+                return;
+            }
+
+            pluginInput.focus({
+                preventScroll: true
+            });
+            if (typeof pluginInput.setSelectionRange === "function") {
+                pluginInput.setSelectionRange(pluginInput.value.length, pluginInput.value.length);
+            }
+        }, 0);
     }
 
     function removeRoot() {

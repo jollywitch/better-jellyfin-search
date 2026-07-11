@@ -1,7 +1,7 @@
 ---
 name: "Better Jellyfin Search"
 guid: "35150473-684b-4dd1-81a3-c3d9001a644f"
-version: "1.0.0.0"
+version: "1.0.1.0"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 overview: "Better search results for Jellyfin Web"
@@ -14,4 +14,4 @@ owner: "jollywitch"
 artifacts:
   - "Jellyfin.Plugin.BetterJellyfinSearch.dll"
 changelog: >
-  Initial public release.
+  Focus the search input when opening the search page.
