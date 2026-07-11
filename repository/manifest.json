@@ -8,6 +8,14 @@
     "owner": "jollywitch",
     "versions": [
       {
+        "version": "1.0.1.0",
+        "changelog": "Focus the search input when opening the search page.",
+        "targetAbi": "10.11.0.0",
+        "timestamp": "2026-07-11T07:38:58Z",
+        "checksum": "47ad4f4fbcb28821b9f89bc7be5c00ff",
+        "sourceUrl": "https://github.com/jollywitch/better-jellyfin-search/releases/download/v1.0.1.0/BetterJellyfinSearch_1.0.1.0.zip"
+      },
+      {
         "version": "1.0.0.0",
         "changelog": "Initial public release.",
         "targetAbi": "10.11.0.0",
